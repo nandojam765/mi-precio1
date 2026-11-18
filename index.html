@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17352d">
+<meta name="description" content="Calculadora de precios, márgenes, costos e historial para tu negocio.">
+<title>Mi Precio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--green:#17352d;--green2:#245344;--mint:#dff5e8;--gold:#e5b957;--bg:#f4f6f4;--ink:#18231f;--muted:#66736c;--line:#dce4de;--white:#fff;--red:#a33b36}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--green);color:white;padding:22px 18px 18px;position:sticky;top:0;z-index:3;box-shadow:0 3px 12px #142c2422}
+.head{max-width:980px;margin:auto;display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:13px;background:var(--gold);color:var(--green);display:grid;place-items:center;font-size:23px;font-weight:900}
+h1{font-size:22px;margin:0}header p{margin:2px 0 0;color:#d7e5dc;font-size:13px}
+main{max-width:980px;margin:20px auto;padding:0 14px 50px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:16px}.tab{border:1px solid var(--line);background:white;color:var(--green);border-radius:999px;padding:10px 15px;font-weight:700;white-space:nowrap}.tab.active{background:var(--green);color:white;border-color:var(--green)}
+.panel{display:none}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.card{background:white;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 3px 12px #18372a08}.card h2{font-size:17px;margin:0 0 13px}.full{grid-column:1/-1}
+label{display:block;font-size:13px;color:var(--muted);font-weight:650;margin:0 0 6px}input,select{width:100%;padding:13px 12px;border:1px solid #cbd7cf;border-radius:11px;font:inherit;background:white;color:var(--ink);outline-color:var(--green2)}.field{margin-bottom:13px}
+.result{background:var(--green);color:white;border-radius:18px;padding:20px}.result .eyebrow{color:#c9ddd1;font-size:12px;font-weight:800;letter-spacing:.08em}.price{font-size:clamp(34px,8vw,52px);line-height:1.1;font-weight:850;color:#9ce5b4;margin:7px 0 16px;overflow-wrap:anywhere}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.stat{background:#ffffff13;padding:11px;border-radius:12px}.stat small{display:block;color:#c9ddd1}.stat strong{font-size:18px}
+button{cursor:pointer;border:0;border-radius:11px;padding:12px 15px;font:700 14px system-ui;background:var(--green);color:white}.btn-secondary{background:#edf3ef;color:var(--green);border:1px solid var(--line)}.btn-danger{background:#fff0ef;color:var(--red);border:1px solid #f0d1ce}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.preset{display:flex;gap:7px;flex-wrap:wrap}.preset button{padding:8px 12px;background:#edf3ef;color:var(--green);border:1px solid var(--line)}.preset button.selected{background:var(--green);color:white}
+.range{width:100%;accent-color:var(--green2);padding:0}.formula{background:#f0f5f1;border-radius:12px;padding:13px;font-size:14px;overflow-wrap:anywhere}.formula strong{color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:12px}td:last-child,th:last-child{text-align:right}.empty{color:var(--muted);padding:18px 0;text-align:center}
+.note{font-size:12px;color:var(--muted);margin-top:12px}.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#17231e;color:white;padding:11px 16px;border-radius:30px;display:none;z-index:5}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:15px}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><div class="head"><div class="logo">₱</div><div><h1>Mi Precio</h1><p>Calcula, organiza y controla tus precios</p></div></div></header>
+<main>
+<nav class="tabs" aria-label="Secciones">
+<button class="tab active" data-tab="calculadora">Calculadora</button>
+<button class="tab" data-tab="productos">Mis productos</button>
+<button class="tab" data-tab="historial">Historial</button>
+</nav>
+
+<section id="calculadora" class="panel active">
+<div class="grid">
+<div class="card">
+<h2>1. Datos del producto</h2>
+<div class="field"><label for="productName">Nombre del producto (opcional)</label><input id="productName" placeholder="Ej. Tenis urbanos"></div>
+<div class="field"><label for="cost">Costo de compra (COP)</label><input id="cost" type="number" min="0" step="100" value="100000"></div>
+<div class="field"><label for="extras">Otros gastos por unidad (COP)</label><input id="extras" type="number" min="0" step="100" value="0"></div>
+<div class="field"><label for="rounding">Redondear precio de venta</label><select id="rounding"><option value="1">Sin redondeo</option><option value="100">A $100</option><option value="1000" selected>A $1.000</option><option value="5000">A $5.000</option><option value="10000">A $10.000</option></select></div>
+</div>
+<div class="card">
+<h2>2. Margen que quieres ganar</h2>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><label for="margin" style="margin:0">Margen sobre el precio de venta</label><strong id="marginLabel" style="font-size:26px;color:var(--green)">50%</strong></div>
+<input class="range" id="margin" type="range" min="5" max="90" step="1" value="50">
+<div class="preset" style="margin-top:14px">
+<button data-margin="20">20%</button><button data-margin="30">30%</button><button data-margin="40">40%</button><button data-margin="50" class="selected">50%</button><button data-margin="60">60%</button><button data-margin="70">70%</button>
+</div>
+<p class="note">El margen indica qué parte del precio de venta queda como ganancia bruta, después de recuperar el costo y los gastos ingresados.</p>
+</div>
+<div class="result full">
+<div class="eyebrow">PRECIO DE VENTA RECOMENDADO</div>
+<div class="price" id="salePrice">$200.000</div>
+<div class="stats">
+<div class="stat"><small>Costo total</small><strong id="totalCost">$100.000</strong></div>
+<div class="stat"><small>Ganancia bruta</small><strong id="profit">$100.000</strong></div>
+<div class="stat"><small>Margen real</small><strong id="actualMargin">50,00%</strong></div>
+<div class="stat"><small>Aumento sobre el costo</small><strong id="markup">100,00%</strong></div>
+</div>
+<div class="actions"><button id="saveHistory">Guardar en historial</button><button class="btn-secondary" id="saveProduct">Guardar producto</button></div>
+</div>
+<div class="card full">
+<h2>3. Así funciona la fórmula</h2>
+<div class="formula">
+<strong>Precio de venta = Costo total ÷ (1 − margen deseado)</strong>
+<p id="formulaText" style="margin-bottom:0">$100.000 ÷ (1 − 0,50) = $200.000</p>
+</div>
+<p class="note">Ejemplo: si el producto cuesta $100.000 y quieres un margen del 50%, debes venderlo en $200.000. Si lo vendes en $150.000, el margen es 33,33%.</p>
+</div>
+<div class="card full">
+<h2>4. Comparar diferentes márgenes</h2>
+<div style="overflow-x:auto"><table><thead><tr><th>Margen deseado</th><th>Precio sugerido</th><th>Ganancia bruta</th></tr></thead><tbody id="comparison"></tbody></table></div>
+</div>
+<div class="card full">
+<h2>5. Diferencia entre margen y aumento</h2>
+<p style="margin-top:0">Son dos cálculos distintos. Puedes elegir el porcentaje según la forma en que quieras fijar tus precios:</p>
+<div class="grid">
+<div><label>Si quieres un margen sobre la venta</label><strong id="marginExplanation">50% → dividir entre 0,50</strong></div>
+<div><label>Si quieres aumentar el costo</label><strong id="markupExplanation">100% → multiplicar por 2</strong></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="productos" class="panel">
+<div class="card">
+<h2>Mis productos guardados</h2>
+<p class="note" style="margin-top:-7px">Guarda productos desde la calculadora para reutilizar sus costos y márgenes.</p>
+<div id="productsList" class="empty">Todavía no has guardado productos.</div>
+</div>
+</section>
+<section id="historial" class="panel">
+<div class="card">
+<h2>Historial de cálculos</h2>
+<div class="actions" style="margin:0 0 12px"><button class="btn-secondary" id="exportCsv">Exportar CSV</button><button class="btn-danger" id="clearHistory">Borrar historial</button></div>
+<div id="historyList" class="empty">Todavía no hay cálculos guardados.</div>
+</div>
+</section>
+<p class="note">Tus datos se guardan en este dispositivo y navegador. No se envían a ningún servidor. Haz una copia CSV de tu historial si quieres conservarlo fuera del teléfono.</p>
+</main>
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body></html>
